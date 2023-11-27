@@ -71,13 +71,12 @@ Therefore, a 32-byte word is represented by 64 hexadecimal characters.
 | `enum`         | Variable     | Variable              | Depends on the number of elements (often 1 to 32 bytes).|
 
 
-## Parse `data` field
-
+## Parse `uint256` from `data`
 
 For example, suppose `data` is: 
 
 ```txt
-0x000000000000000000000000000000000000000000000019bff2ff57968ccccc0000000000000000000000000000008b35e940445792662e41f8b418680f6ebd
+0x0000000000000000000000000000000000000000000000a2a15d09519be00000000000000000000000000000000002e93c1c6586656bb97761036c475599e3d0
 ```
 
 where `data` is the concatenation of `uint256 value` and `uint256 units`, in the following event:
@@ -92,14 +91,16 @@ event ValidatorGroupVoteActivated(
 ```
 
 We know that 1 byte is 2 hex characters, and the data type `uint256` requires 32 bytes or 64 
-hex characters. On that basis, we can use the `bytearray_substring` function to parse 
-`value` and `units` from `data`:
+hex characters. On that basis, we can use the 
+[`bytearray_substring(varbinary, integer, integer) → varbinary`][3]
+function to parse `value` and `units` from `data`:
 
 ```sql
 SELECT 
     -- ...
-    bytearray_substring(data, 1, 33) as value, -- uint256 = 32 bytes = 64 hex characters
-    bytearray_substring(data, 34, 66) as units -- uint256 = 32 bytes = 64 hex characters
+    bytearray_substring(data, 1, 32) as value, -- uint256 = 32 bytes = 64 hex characters
+    bytearray_substring(data, 33, 64) as units -- uint256 = 32 bytes = 64 hex characters
+    -- ...
 FROM celo.logs
 WHERE contract_address = 0x8d6677192144292870907e3fa8a5527fe55a7ff6 -- ElectionProxy
     AND topic0 = 0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe -- ValidatorGroupVoteActivated
@@ -108,21 +109,83 @@ WHERE contract_address = 0x8d6677192144292870907e3fa8a5527fe55a7ff6 -- ElectionP
 This returns:
 
 ```txt
-value = 0x000000000000000000000000000000000000000000000019bff2ff57968ccccc00
-units = 0x00000000000000000000000000008b35e940445792662e41f8b418680f6ebd
+value = 0x0000000000000000000000000000000000000000000000a2a15d09519be00000
+units = 0x000000000000000000000000000002e93c1c6586656bb97761036c475599e3d0
 ```
 
-As a footnote, unfortunately, in dune you need to ignore `0x` in `data`, which is the first byte, 
-so the indices are shifted by 1. See dune docs for 
-[`bytearray_substring(varbinary, integer, integer)`][3].
+> **FOOTNOTE**
+> Unfortunately, in dune you need to ignore `0x` in `data`, which is the first byte, 
+> so the indices are shifted by 1. See dune docs for 
+> [`bytearray_substring(varbinary, integer, integer) → varbinary`][3].
+> 
+> ```sql
+> SELECT 0xabcdefabcdef AS varbinary_data,
+>        bytearray_substring(0xabcdefabcdef, 1, 3) AS varbinary_substring
+> -- returns  0xabcd
+> ```
+
+
+Now convert `value` and `unit` (which are `varbinary` words)  to `uint256` using [`bytearray_to_uint256(varbinary) → uint256`][4]:
 
 ```sql
-SELECT 0xabcdefabcdef AS varbinary_data,
-       bytearray_substring(0xabcdefabcdef, 1, 3) AS varbinary_substring
--- returns  0xabcd
+SELECT 
+    -- ...
+    bytearray_to_uint256(bytearray_substring(data, 1, 32)) as value, -- uint256 = 32 bytes = 64 hex characters
+    bytearray_to_uint256(bytearray_substring(data, 33, 64)) as units -- uint256 = 32 bytes = 64 hex characters
+    -- ...
+FROM celo.logs
+WHERE contract_address = 0x8d6677192144292870907e3fa8a5527fe55a7ff6 -- ElectionProxy
+    AND topic0 = 0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe -- ValidatorGroupVoteActivated
 ```
 
-[3]: https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_substring
+This returns: 
+
+```txt
+value = 3000000000000000000000
+units = 253590264479329621170386650913407566996432
+```
+
+[3]: https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#byte-array-manipulation-functions
+[4]: https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_to_uint256
+
+### Remove leading zeros from `address`
+
+For example, suppose `topic1` is: 
+
+```txt
+0x000000000000000000000000da5fc5db514ffe24f30229711fc4545624e52320
+```
+
+where `topic1` is `address account`, in the following event:
+
+```solidity
+event ValidatorGroupVoteActivated(
+    address indexed account,
+    address indexed group,
+    uint256 value,
+    uint256 units
+);
+```
+
+We can use [`bytearray_ltrim(varbinary) → varbinary`][5] to remove leading zeros from `topic1`:
+
+```sql
+SELECT 
+    -- ...
+    bytearray_ltrim(topic1) as account,
+    -- ...
+FROM celo.logs
+WHERE contract_address = 0x8d6677192144292870907e3fa8a5527fe55a7ff6 -- ElectionProxy
+    AND topic0 = 0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe -- ValidatorGroupVoteActivated
+```
+
+This returns:
+
+```txt
+account = 0xda5fc5db514ffe24f30229711fc4545624e52320
+```
+
+[5]: https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_ltrim
 
 ## Date and Time
 
