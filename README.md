@@ -58,6 +58,8 @@ By analogy, if **topics** are _keys_, then **data** is the _value_.
 In Ethereum, 1 byte = 2 hexadecimal characters.
 Therefore, a 32-byte word is represented by 64 hexadecimal characters.
 
+> **FOOTNOTE**
+> Remember, 8 bits = 1 byte = [256 possible patterns][6] = 2 hexadecimal characters = 1 ASCII character
 
 | Solidity data type  | Size (Bytes) | Size (Hex Characters) | Notes                                                   |
 |----------------|--------------|-----------------------|---------------------------------------------------------|
@@ -70,6 +72,7 @@ Therefore, a 32-byte word is represented by 64 hexadecimal characters.
 | `bytes`        | Variable     | Variable              | Similar to `string`, dynamic size.                      |
 | `enum`         | Variable     | Variable              | Depends on the number of elements (often 1 to 32 bytes).|
 
+[6]: https://web.stanford.edu/class/cs101/bits-bytes.html
 
 ## Parse `uint256` from `data`
 
