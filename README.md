@@ -187,6 +187,15 @@ account = 0xda5fc5db514ffe24f30229711fc4545624e52320
 
 [5]: https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_ltrim
 
+### Convert wei to ethers
+
+```sql
+SELECT 
+    (value * 1e-18) as amountInDollar -- converts to decimal (10^18 wei = 1 ether)
+FROM erc20_celo.evt_Transfer
+WHERE contract_address = 0x765de816845861e75a25fca122bb6898b8b1282a -- cUSD ERC-20 token 
+```
+
 ## Date and Time
 
 ### Getting year, month, day from timestamp
