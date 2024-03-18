@@ -226,3 +226,18 @@ Example of hacky way I needed to get `2023_09` type `varchar`:
 ```sql
 CONCAT(CAST(year(time) as varchar), '-', cast(month(time) as varchar)) as year_month,
 ```
+
+## Format labels
+
+I like to use `0[.]00a`, but other label formats are available:
+
+| Starting Value | Tick/Label format | Output          | Description                                                                                           |
+|----------------|------------------|-----------------|-------------------------------------------------------------------------------------------------------|
+| 1256784.3745   | [blank]          | 1256784.3745000 | Displays the number with 7 decimal precision.                                                         |
+| 1256784.3745   | 0                | 1256784         | Displays only the integer.                                                                            |
+| 1256784.3745   | 0,0              | 1,256,784       | Only displays the integer with comma separation.                                                       |
+| 1256784.3745   | 0,0.00           | 1,256,784.38    | Displays the number with [x] decimal precision, where [x] is the number of 0 you add after the decimal point. |
+| 1256784.3745   | 0.0a             | 1.2M            | Displays the number with [x] precision and a letter based on the number’s 1e[y] power (eg “m” for million, “b” for billion) |
+| 1256784.3745   | $0.0a            | $1.2M           | Adds a ”$” to the number. Works with all formats above though use of the a suffix is recommended. Currently the only ”$” is the only supported currency symbol. |
+
+Source: [docs.dune.com > visualisations](https://docs.dune.com/web-app/visualizations/charts-graphs#x-y-axis-tick-and-label-formats)
