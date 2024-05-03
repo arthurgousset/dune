@@ -241,3 +241,43 @@ I like to use `0[.]00a`, but other label formats are available:
 | 1256784.3745   | $0.0a            | $1.2M           | Adds a ”$” to the number. Works with all formats above though use of the a suffix is recommended. Currently the only ”$” is the only supported currency symbol. |
 
 Source: [docs.dune.com > visualisations](https://docs.dune.com/web-app/visualizations/charts-graphs#x-y-axis-tick-and-label-formats)
+
+## Manual append rows to a SQl query
+
+Sometimes I need to manually add a row to a SQL query. This is not ideal and not a long-term 
+solution, but sometimes it helps as a hacky solution. 
+
+For example, this query [ERC20 | Token names](https://dune.com/queries/3340302):
+
+```sql
+SELECT 
+    DISTINCT symbol as name,
+    contract_address as address
+FROM tokens.erc20
+WHERE blockchain = 'celo'
+
+UNION
+
+/*
+I'm manually adding names for adapted tokens like USDT and USDC, 
+which are used as fee currencies on Celo. 
+
+Unfortunately, the fee currency field will show the adapted token address, 
+which has 18 decimals, and not the ERC20 token address, which has 6 decimals. 
+
+Since the `tokens.erc20` table only includes ERC20 tokens, it doesn't
+include adapted tokens. 
+
+This is a hacky fix, and probably not a good solution. 
+But it's good enough for now.
+
+Source for name and addresses of adapted token: 
+https://docs.celo.org/protocol/transaction/erc20-transaction-fees#adapters-by-network
+*/
+SELECT 'USDC' AS name, 0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B AS address
+UNION
+SELECT 'USDT' AS name, 0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72 AS address
+
+-- Order all results
+ORDER BY name
+```
