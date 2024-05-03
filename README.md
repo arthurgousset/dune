@@ -159,9 +159,9 @@ units = 253590264479329621170386650913407566996432
 ```
 
 [3]:
-    https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#byte-array-manipulation-functions
+  https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#byte-array-manipulation-functions
 [4]:
-    https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_to_uint256
+  https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_to_uint256
 
 ### Remove leading zeros from `address`
 
@@ -201,7 +201,7 @@ account = 0xda5fc5db514ffe24f30229711fc4545624e52320
 ```
 
 [5]:
-    https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_ltrim
+  https://dune.com/docs/query/DuneSQL-reference/Functions-and-operators/varbinary/#bytearray_ltrim
 
 ### Convert wei to ethers
 
@@ -231,26 +231,26 @@ CONCAT(CAST(year(time) as varchar), '-', cast(month(time) as varchar)) as year_m
 
 I like to use `0[.]00a`, but other label formats are available:
 
-| Starting Value | Tick/Label format | Output          | Description                                                                                           |
-|----------------|------------------|-----------------|-------------------------------------------------------------------------------------------------------|
-| 1256784.3745   | [blank]          | 1256784.3745000 | Displays the number with 7 decimal precision.                                                         |
-| 1256784.3745   | 0                | 1256784         | Displays only the integer.                                                                            |
-| 1256784.3745   | 0,0              | 1,256,784       | Only displays the integer with comma separation.                                                       |
-| 1256784.3745   | 0,0.00           | 1,256,784.38    | Displays the number with [x] decimal precision, where [x] is the number of 0 you add after the decimal point. |
-| 1256784.3745   | 0.0a             | 1.2M            | Displays the number with [x] precision and a letter based on the number’s 1e[y] power (eg “m” for million, “b” for billion) |
-| 1256784.3745   | $0.0a            | $1.2M           | Adds a ”$” to the number. Works with all formats above though use of the a suffix is recommended. Currently the only ”$” is the only supported currency symbol. |
+| Starting Value | Tick/Label format | Output          | Description                                                                                                                                                     |
+| -------------- | ----------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1256784.3745   | [blank]           | 1256784.3745000 | Displays the number with 7 decimal precision.                                                                                                                   |
+| 1256784.3745   | 0                 | 1256784         | Displays only the integer.                                                                                                                                      |
+| 1256784.3745   | 0,0               | 1,256,784       | Only displays the integer with comma separation.                                                                                                                |
+| 1256784.3745   | 0,0.00            | 1,256,784.38    | Displays the number with [x] decimal precision, where [x] is the number of 0 you add after the decimal point.                                                   |
+| 1256784.3745   | 0.0a              | 1.2M            | Displays the number with [x] precision and a letter based on the number’s 1e[y] power (eg “m” for million, “b” for billion)                                     |
+| 1256784.3745   | $0.0a             | $1.2M           | Adds a ”$” to the number. Works with all formats above though use of the a suffix is recommended. Currently the only ”$” is the only supported currency symbol. |
 
-Source: [docs.dune.com > visualisations](https://docs.dune.com/web-app/visualizations/charts-graphs#x-y-axis-tick-and-label-formats)
+Source:
+[docs.dune.com > visualisations](https://docs.dune.com/web-app/visualizations/charts-graphs#x-y-axis-tick-and-label-formats)
 
-## Manual append rows to a SQl query
+## Manually append rows to a SQl query
 
-Sometimes I need to manually add a row to a SQL query. This is not ideal and not a long-term 
-solution, but sometimes it helps as a hacky solution. 
-
-For example, this query [ERC20 | Token names](https://dune.com/queries/3340302):
+Sometimes I need to manually add a row to a SQL query. This is not ideal and not a long-term
+solution, but sometimes it helps as a hacky solution. For example, this query
+[ERC20 | Token names](https://dune.com/queries/3340302):
 
 ```sql
-SELECT 
+SELECT
     DISTINCT symbol as name,
     contract_address as address
 FROM tokens.erc20
@@ -259,19 +259,19 @@ WHERE blockchain = 'celo'
 UNION
 
 /*
-I'm manually adding names for adapted tokens like USDT and USDC, 
-which are used as fee currencies on Celo. 
+I'm manually adding names for adapted tokens like USDT and USDC,
+which are used as fee currencies on Celo.
 
-Unfortunately, the fee currency field will show the adapted token address, 
-which has 18 decimals, and not the ERC20 token address, which has 6 decimals. 
+Unfortunately, the fee currency field will show the adapted token address,
+which has 18 decimals, and not the ERC20 token address, which has 6 decimals.
 
 Since the `tokens.erc20` table only includes ERC20 tokens, it doesn't
-include adapted tokens. 
+include adapted tokens.
 
-This is a hacky fix, and probably not a good solution. 
+This is a hacky fix, and probably not a good solution.
 But it's good enough for now.
 
-Source for name and addresses of adapted token: 
+Source for name and addresses of adapted token:
 https://docs.celo.org/protocol/transaction/erc20-transaction-fees#adapters-by-network
 */
 SELECT 'USDC' AS name, 0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B AS address
